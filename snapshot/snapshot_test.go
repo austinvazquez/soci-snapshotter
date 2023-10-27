@@ -114,6 +114,65 @@ func TestRemotePrepare(t *testing.T) {
 	}
 }
 
+func viewWithTarget(t *testing.T, sn snapshots.Snapshotter, target, key, parent string, labels map[string]string) string {
+	ctx := context.TODO()
+	if labels == nil {
+		labels = make(map[string]string)
+	}
+	labels[targetSnapshotLabel] = target
+	if _, err := sn.View(ctx, key, parent, snapshots.WithLabels(labels)); !errdefs.IsAlreadyExists(err) {
+		t.Fatalf("failed to prepare remote snapshot: %v", err)
+	}
+	return target
+}
+
+func TestRemoteView(t *testing.T) {
+	testutil.RequiresRoot(t)
+	ctx := context.TODO()
+	root := t.TempDir()
+	sn, err := NewSnapshotter(context.TODO(), root, bindFileSystem(t))
+	if err != nil {
+		t.Fatalf("failed to make new remote snapshotter: %q", err)
+	}
+
+	// Prepare a remote snapshot.
+	target := viewWithTarget(t, sn, "testTarget", "/tmp/prepareTarget", "", nil)
+	defer sn.Remove(ctx, target)
+
+	// Get internally committed remote snapshot.
+	var tinfo *snapshots.Info
+	if err := sn.Walk(ctx, func(ctx context.Context, i snapshots.Info) error {
+		if tinfo == nil && i.Kind == snapshots.KindCommitted {
+			if i.Labels[targetSnapshotLabel] != target {
+				return nil
+			}
+			if i.Parent != "" {
+				return nil
+			}
+			tinfo = &i
+		}
+		return nil
+
+	}); err != nil {
+		t.Fatalf("failed to get remote snapshot: %v", err)
+	}
+	if tinfo == nil {
+		t.Fatalf("prepared remote snapshot %q not found", target)
+	}
+
+	// Stat and validate the remote snapshot.
+	info, err := sn.Stat(ctx, tinfo.Name)
+	if err != nil {
+		t.Fatal("failed to stat remote snapshot")
+	}
+	if info.Kind != snapshots.KindCommitted {
+		t.Errorf("snapshot Kind is %q; want %q", info.Kind, snapshots.KindCommitted)
+	}
+	if label, ok := info.Labels[targetSnapshotLabel]; !ok || label != target {
+		t.Errorf("remote snapshot hasn't valid remote label: %q", label)
+	}
+}
+
 func TestRemoteOverlay(t *testing.T) {
 	testutil.RequiresRoot(t)
 	ctx := context.TODO()
