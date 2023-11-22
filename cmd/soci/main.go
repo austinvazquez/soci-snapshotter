@@ -32,6 +32,8 @@
 
 package main
 
+// This is a test.
+
 import (
 	"fmt"
 	"os"
