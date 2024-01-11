@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
+  pull_request:
+    branches: ['main', 'release/**']
+    paths:
+      # Perform a dry-run release when release automation changes are made.
+      - '.github/workflows/releases.yml'
+
 env:
   GO_VERSION: '1.20.12'
 
@@ -49,8 +55,10 @@ jobs:
     - uses: actions/checkout@v4
     - name: Setup and export variables
       run: |
-        export release_tag=${GITHUB_REF#refs/*/} # Strip down to raw tag name
+        export release_tag=${{ github.ref_name }}
+        echo $release_tag
         export release_version=${release_tag/v/} # Remove v from tag name
+        echo $release_version
 
         echo "RELEASE_TAG=${release_tag}" >> $GITHUB_ENV
         echo "DYNAMIC_BINARY_NAME=soci-snapshotter-${release_version}-linux-amd64.tar.gz" >> $GITHUB_ENV
