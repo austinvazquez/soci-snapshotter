@@ -11,6 +11,7 @@ on:
       - '.github/workflows/releases.yml'
 
 env:
+  IS_DRY_RUN: github.event == 'pull_request'
   GO_VERSION: '1.20.12'
 
 permissions:
@@ -27,9 +28,19 @@ jobs:
       STATIC_BINARY_NAME: ''
     steps:
     - uses: actions/checkout@v4
-    - name: Setup and export variables
+    - name: Setup environment variables from context (Dry-Run)
+      if: ${{ github.event_name == 'pull_request' }}
       run: |
-        export release_tag=${{ github.ref_name }}
+        release_version='0.0.0-dryrun'
+        echo "RELEASE_TAG=v${release_version}" >> $GITHUB_ENV
+        echo "DYNAMIC_BINARY_NAME=soci-snapshotter-${release_version}-linux-amd64.tar.gz" >> $GITHUB_ENV
+        echo "STATIC_BINARY_NAME=soci-snapshotter-${release_version}-linux-amd64-static.tar.gz" >> $GITHUB_ENV
+        
+        mkdir release
+    - name: Setup environment variables from context
+      if: ${{ github.event_name == 'push' }}
+      run: |
+        export release_tag=${GITHUB_REF#refs/*/}
         echo $release_tag
         export release_version=${release_tag/v/} # Remove v from tag name
         echo $release_version
@@ -63,6 +74,7 @@ jobs:
       - run: bash scripts/verify-release-artifacts.sh ${{ needs.generate-artifacts.outputs.release_tag }}
 
   create-release:
+    if: ${{ github.event_name == 'push' }}
     needs: [generate-artifacts, validate-artifacts]
     runs-on: ubuntu-20.04
     steps:
