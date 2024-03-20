@@ -17,11 +17,19 @@ func GetRootAsTOC(buf []byte, offset flatbuffers.UOffsetT) *TOC {
 	return x
 }
 
+func FinishTOCBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsTOC(buf []byte, offset flatbuffers.UOffsetT) *TOC {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &TOC{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedTOCBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *TOC) Init(buf []byte, i flatbuffers.UOffsetT) {

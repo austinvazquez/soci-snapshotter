@@ -17,7 +17,7 @@
 package compression
 
 // #cgo CFLAGS: -I${SRCDIR}/
-// #cgo LDFLAGS: -L${SRCDIR}/../out -l:libz.a
+// #cgo pkg-config: zlib
 // #include "gzip_zinfo.h"
 // #include <stdlib.h>
 // #include <stdint.h>

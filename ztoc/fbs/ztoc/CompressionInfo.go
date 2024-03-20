@@ -17,11 +17,19 @@ func GetRootAsCompressionInfo(buf []byte, offset flatbuffers.UOffsetT) *Compress
 	return x
 }
 
+func FinishCompressionInfoBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsCompressionInfo(buf []byte, offset flatbuffers.UOffsetT) *CompressionInfo {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &CompressionInfo{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedCompressionInfoBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *CompressionInfo) Init(buf []byte, i flatbuffers.UOffsetT) {

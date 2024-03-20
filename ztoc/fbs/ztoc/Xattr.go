@@ -17,11 +17,19 @@ func GetRootAsXattr(buf []byte, offset flatbuffers.UOffsetT) *Xattr {
 	return x
 }
 
+func FinishXattrBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsXattr(buf []byte, offset flatbuffers.UOffsetT) *Xattr {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Xattr{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedXattrBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Xattr) Init(buf []byte, i flatbuffers.UOffsetT) {

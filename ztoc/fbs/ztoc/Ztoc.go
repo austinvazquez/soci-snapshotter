@@ -17,11 +17,19 @@ func GetRootAsZtoc(buf []byte, offset flatbuffers.UOffsetT) *Ztoc {
 	return x
 }
 
+func FinishZtocBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsZtoc(buf []byte, offset flatbuffers.UOffsetT) *Ztoc {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &Ztoc{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedZtocBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *Ztoc) Init(buf []byte, i flatbuffers.UOffsetT) {

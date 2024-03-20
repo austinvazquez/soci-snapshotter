@@ -17,11 +17,19 @@ func GetRootAsTarZinfo(buf []byte, offset flatbuffers.UOffsetT) *TarZinfo {
 	return x
 }
 
+func FinishTarZinfoBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsTarZinfo(buf []byte, offset flatbuffers.UOffsetT) *TarZinfo {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &TarZinfo{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedTarZinfoBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *TarZinfo) Init(buf []byte, i flatbuffers.UOffsetT) {

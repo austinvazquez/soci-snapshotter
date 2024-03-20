@@ -17,11 +17,19 @@ func GetRootAsFileMetadata(buf []byte, offset flatbuffers.UOffsetT) *FileMetadat
 	return x
 }
 
+func FinishFileMetadataBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.Finish(offset)
+}
+
 func GetSizePrefixedRootAsFileMetadata(buf []byte, offset flatbuffers.UOffsetT) *FileMetadata {
 	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
 	x := &FileMetadata{}
 	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
+}
+
+func FinishSizePrefixedFileMetadataBuffer(builder *flatbuffers.Builder, offset flatbuffers.UOffsetT) {
+	builder.FinishSizePrefixed(offset)
 }
 
 func (rcv *FileMetadata) Init(buf []byte, i flatbuffers.UOffsetT) {
