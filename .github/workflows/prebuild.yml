@@ -33,6 +33,8 @@ jobs:
 
   shellcheck:
     runs-on: ubuntu-20.04
+    env:
+      DOCKER_CONTENT_TRUST: 1
     container: koalaman/shellcheck-alpine:v0.10.0
     steps:
       - uses: actions/checkout@v4
