@@ -17,7 +17,7 @@ ARG RUNC_VERSION=1.1.12
 ARG NERDCTL_VERSION=1.7.1
 ARG GO_VERSION=1.21.8
 
-FROM golang:${GO_VERSION}-bookworm AS golang-base
+FROM golang:${GO_VERSION}-alpine3.19 AS golang-base
 
 FROM golang-base AS containerd-snapshotter-base
 ARG CONTAINERD_VERSION
@@ -28,7 +28,14 @@ ARG TARGETARCH
 COPY ./integ_entrypoint.sh /integ_entrypoint.sh
 COPY . $GOPATH/src/github.com/awslabs/soci-snapshotter
 ENV GOPROXY direct
-RUN apt-get update -y && apt-get install -y libbtrfs-dev libseccomp-dev libz-dev gcc fuse pigz
+RUN apk update && apk add \
+    btrfs-progs-libs \
+    curl \
+    fuse-openrc \
+    gcc \
+    libseccomp-dev \
+    pigz \
+    zlib-dev
 RUN cp $GOPATH/src/github.com/awslabs/soci-snapshotter/out/soci /usr/local/bin/ && \
     cp $GOPATH/src/github.com/awslabs/soci-snapshotter/out/soci-snapshotter-grpc /usr/local/bin/ && \
     mkdir /etc/soci-snapshotter-grpc && \
