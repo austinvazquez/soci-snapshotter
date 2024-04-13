@@ -8,10 +8,9 @@ on:
 
 env:
   GO_VERSION: '1.21.9'
-  GOLANGCI_LINT_VERSION: '1.56.2'
 
 jobs:
-  check:
+  check-dco:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
@@ -27,11 +26,10 @@ jobs:
       - run: wget https://github.com/google/flatbuffers/releases/download/v22.9.29/Linux.flatc.binary.g++-10.zip
       - run: unzip Linux.flatc.binary.g++-10.zip
       - run: ./scripts/install-check-tools.sh
-      - run: ./scripts/check-ltag.sh
       - run: ./scripts/check-dco.sh
       - run: PATH=$PATH:$(pwd) ./scripts/check-flatc.sh
 
-  git-secrets:
+  check-git-secrets:
     runs-on: ubuntu-20.04
     steps:
       - name: Pull latest awslabs/git-secrets repo
@@ -50,17 +48,15 @@ jobs:
           git secrets --register-aws
           git secrets --scan-history
 
-  lint:
-    strategy:
-      matrix:
-        working_dir: ['.', 'cmd']
+  check-licensing:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
-      - uses: golangci/golangci-lint-action@v4
+      - uses: actions/setup-go@v5
         with:
-          version: v${{ env.GOLANGCI_LINT_VERSION }}
-          working-directory: ${{ matrix.working_dir }}
+          go-version: ${{ env.GO_VERSION }}
+      - run: ./scripts/install-check-tools.sh
+      - run: ./scripts/check-ltag.sh
 
   yamllint:
     name: yamllint-lint
@@ -68,10 +64,3 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: yamllint .
-
-  shellcheck:
-    runs-on: ubuntu-20.04
-    container: koalaman/shellcheck-alpine:v0.10.0
-    steps:
-      - uses: actions/checkout@v4
-      - run: shellcheck ./**/*.sh

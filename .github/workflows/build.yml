@@ -17,12 +17,32 @@ on:
       - 'Makefile'
       - 'Dockerfile'
       - 'integration/**'
-      - 'scripts/**'
+      - '**.sh'
 
 env:
   GO_VERSION: '1.21.9'
+  GOLANGCI_LINT_VERSION: '1.56.2'
 
 jobs:
+  shellcheck:
+    runs-on: ubuntu-20.04
+    container: koalaman/shellcheck-alpine:v0.10.0
+    steps:
+      - uses: actions/checkout@v4
+      - run: shellcheck ./**/*.sh
+
+  lint:
+    strategy:
+      matrix:
+        working_dir: ['.', 'cmd']
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: golangci/golangci-lint-action@v4
+        with:
+          version: v${{ env.GOLANGCI_LINT_VERSION }}
+          working-directory: ${{ matrix.working_dir }}
+
   test:
     runs-on: ubuntu-20.04
     steps:
@@ -32,6 +52,7 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
       - run: make
       - run: make test
+
   integration:
     runs-on: ubuntu-20.04
     strategy:
