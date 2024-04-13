@@ -48,7 +48,7 @@ jobs:
           git secrets --register-aws
           git secrets --scan-history
 
-  check-licensing:
+  check-copyright-headers:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
@@ -57,6 +57,24 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
       - run: ./scripts/install-check-tools.sh
       - run: ./scripts/check-ltag.sh
+
+  check-licensing:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Install go-licenses
+        shell: bash
+        run: go install github.com/google/go-licenses@v1.6.0
+      - name: Check licenses
+        shell: bash
+        run: |
+          allowed_licenses="Apache-2.0,BSD-2-Clause,BSD-2-Clause-FreeBSD,\
+            BSD-3-Clause,ISC,MIT,MPL-2.0,PostgreSQL,Python-2.0,X11,Zlib"
+          go-licenses check --include_tests  ${{ github.workspace }}/... \
+            --allowed_licenses="${allowed_licenses}"
 
   yamllint:
     name: yamllint-lint
