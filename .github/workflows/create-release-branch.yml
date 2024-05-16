@@ -1,0 +1,77 @@
+name: Create release branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      major_minor_version:
+        description: 'Major.Minor release version (i.e. 1.6)'
+        required: true
+      base_commit:
+        description: 'Base commit SHA (i.e. be8940b39667bc3975cf7ea8a71177e4bfb5f6e0)'
+        required: true
+  pull_request:
+    branches: ['main']
+    paths:
+      - '.github/workflows/create-release-branch.yml'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create:
+    runs-on: ubuntu-20.04
+    env:
+      MAJOR_MINOR_VERSION: ''
+      BASE_COMMIT: ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Mock workflow inputs on pull request
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "MAJOR_MINOR_VERSION=pr.${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+          echo "BASE_COMMIT=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
+
+      - name: Set environment variables for workflow
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "MAJOR_MINOR_VERSION=${{ github.event.inputs.major_minor_version }}" >> $GITHUB_ENV
+          echo "BASE_COMMIT=${{ github.event.inputs.base_commit }}" >> $GITHUB_ENV
+
+      - name: Create release branch
+        run: git checkout -b release/${{ env.MAJOR_MINOR_VERSION }} ${{ env.BASE_COMMIT }}
+
+      - name: Initialize mandatory git config
+        run: |
+         git config user.name "GitHub Actions"
+         git config user.email noreply@github.com
+
+      - uses: ./.github/actions/update-getting-started
+        with:
+          version: ${{ env.MAJOR_MINOR_VERSION }}.0
+
+      - uses: actions/setup-go@v5
+
+      - name: Install go-licenses
+        run: go install github.com/google/go-licenses@v1.6.0
+
+      - name: Generate third party licenses file
+        run: scripts/build-third-party-licenses.sh
+
+      - name: Commit THIRD_PARTY_LICENSES and getting started guide
+        run: |
+          git add THIRD_PARTY_LICENSES
+          git add docs/getting-started.md
+          git commit --message "Prepare release ${{ env.MAJOR_MINOR_VERSION }}" --signoff
+
+      - name: Show commit
+        run: |
+          git log -1 --show-signature
+          git diff ${{ env.BASE_COMMIT }}
+
+      - name: Push new release branch
+        if: github.event_name == 'workflow_dispatch'
+        run: git push origin release/${{ env.MAJOR_MINOR_VERSION }}
