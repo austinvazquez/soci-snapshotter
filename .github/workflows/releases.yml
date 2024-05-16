@@ -24,6 +24,7 @@ jobs:
     env:
       # Set during setup.
       RELEASE_TAG: ''
+      RELEASE_VERSION: ''
       DYNAMIC_BINARY_NAME: ''
       STATIC_BINARY_NAME: ''
     steps:
@@ -32,15 +33,17 @@ jobs:
         run: |
           export release_tag=${GITHUB_REF#refs/*/} # Strip down to raw tag name
           echo "RELEASE_TAG=${release_tag}" >> $GITHUB_ENV
+          echo "RELEASE_VERSION=${RELEASE_TAG/v/}" >> $GITHUB_ENV # Remove v from tag name
       - name: Create dummy environment for release
         if: github.event_name == 'pull_request'
         run: |
           touch THIRD_PARTY_LICENSES
-          echo "RELEASE_TAG=v0.0.0" >> $GITHUB_ENV
+          echo "RELEASE_TAG=v0.0.0-${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+          echo "RELEASE_VERSION=0.0.0-${{ github.event.pull_request.number }}" >> $GITHUB_ENV
       - name: Setup variables and release directories
         run: |
           export release_tag=${{ env.RELEASE_TAG }}
-          export release_version=${release_tag/v/} # Remove v from tag name
+          export release_version=${{ env.RELEASE_VERSION }}
           echo "DYNAMIC_BINARY_NAME=soci-snapshotter-${release_version}-linux-amd64.tar.gz" >> $GITHUB_ENV
           echo "STATIC_BINARY_NAME=soci-snapshotter-${release_version}-linux-amd64-static.tar.gz" >> $GITHUB_ENV
 
