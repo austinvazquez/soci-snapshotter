@@ -9,7 +9,7 @@ env:
 
 jobs:
   check:
-    runs-on: codebuild-soci-comparision-test-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-xlarge
+    runs-on: ${{ 'github.event.pull_request.head.repo.fork '  && 'ubuntu-22.04' || 'codebuild-soci-comparision-test-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-xlarge' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5

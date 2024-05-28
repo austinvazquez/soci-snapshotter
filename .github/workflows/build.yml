@@ -24,7 +24,7 @@ env:
 
 jobs:
   test:
-    runs-on: codebuild-soci-build-workflow-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-xlarge
+    runs-on: ${{ 'github.event.pull_request.head.repo.fork '  && 'ubuntu-22.04' || 'codebuild-soci-build-workflow-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-xlarge' }}
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -34,7 +34,7 @@ jobs:
       - run: make
       - run: make test
   integration:
-    runs-on: codebuild-soci-build-workflow-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-xlarge
+    runs-on: ${{ 'github.event.pull_request.head.repo.fork '  && 'ubuntu-22.04' || 'codebuild-soci-build-workflow-${{ github.run_id }}-${{ github.run_attempt }}-ubuntu-7.0-xlarge' }}
     timeout-minutes: 40
     strategy:
       fail-fast: false
