@@ -1,0 +1,17 @@
+name: "Update getting started version"
+description: "Reusable action to update the getting started version"
+inputs:
+  version:
+    required: true
+    description: "Recommended SOCI version"
+
+runs:
+  using: composite
+  steps:
+    - name: "Update getting started version"
+      shell: bash
+      run: |
+        version=${{ inputs.version }}
+        version=${version/v/} # strip prefix v if not already stripped
+        sed -i -E "s/version=\"([0-9]+\.){2}[0-9]+\"/version=\"${version}\"/" docs/getting-started.md
+        git diff
