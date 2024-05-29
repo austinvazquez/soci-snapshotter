@@ -15,12 +15,13 @@ on:
       - 'docs/getting-started.md'
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   update-version:
     runs-on: ubuntu-20.04
+    permissions:
+      pull-requests: write
     env:
       RELEASE_TAG: ''
     steps:
