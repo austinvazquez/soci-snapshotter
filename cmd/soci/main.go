@@ -49,6 +49,8 @@ import (
 	"github.com/urfave/cli"
 )
 
+// This is a test
+
 func init() {
 	//nolint:staticcheck
 	seed.WithTimeAndRand() //lint:ignore SA1019, WithTimeAndRand is deprecated and we should remove it.
