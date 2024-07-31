@@ -11,7 +11,7 @@ allow-licenses:
   - 'Zlib'
 
 allow_dependencies_licenses:
- - github.com/hashicorp/go-retryablehttp
- - github.com/hashicorp/errwrap
- - github.com/hashicorp/go-cleanhttp
- - github.com/hashicorp/go-multierror
+ - pkg:github.com/hashicorp/go-retryablehttp
+ - pkg:github.com/hashicorp/errwrap
+ - pkg:github.com/hashicorp/go-cleanhttp
+ - pkg:github.com/hashicorp/go-multierror
