@@ -9,3 +9,9 @@ allow-licenses:
   - 'PostgreSQL'
   - 'X11'
   - 'Zlib'
+
+allow_dependencies_licenses:
+ - github.com/hashicorp/go-retryablehttp
+ - github.com/hashicorp/errwrap
+ - github.com/hashicorp/go-cleanhttp
+ - github.com/hashicorp/go-multierror
