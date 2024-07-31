@@ -1,0 +1,30 @@
+name: Review dependencies
+
+on:
+  pull_request:
+    branches: ['main', 'release/**']
+    paths:
+      - 'go.*'
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+
+    permissions:
+      # Write permissions needed to comment review results on PR.
+      # Pwn request risk mitigated by using pull_request workflow trigger,
+      # sparse checkout of dependency files only, and external contributor
+      # workflow runs require maintainer approval.
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            go.mod
+            go.sum
+
+      - uses: actions/dependency-review-action@v4
+        with:
+          config-file: './.github/dependency-review-config.yml'
+          comment-summary-in-pr: always
