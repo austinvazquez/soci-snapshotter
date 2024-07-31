@@ -22,8 +22,8 @@ jobs:
         with:
           sparse-checkout: |
             .github/dependency-review-config.yml
-            go.mod
-            go.sum
+            go.*
+            cmd/go.*
         
       - run: ls -al
 
