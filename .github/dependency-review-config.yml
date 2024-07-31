@@ -9,4 +9,3 @@ allow-licenses:
   - 'PostgreSQL'
   - 'X11'
   - 'Zlib'
-  - 'MPL-2.0'
