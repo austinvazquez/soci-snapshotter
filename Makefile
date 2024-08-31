@@ -17,6 +17,7 @@
 CMD_DESTDIR ?= /usr/local
 GO111MODULE_VALUE=auto
 OUTDIR ?= $(CURDIR)/out
+COVDIR ?= $(CURDIR)/cov
 PKG=github.com/awslabs/soci-snapshotter
 VERSION=$(shell git describe --match 'v[0-9]*' --dirty='.m' --always --tags)
 REVISION=$(shell git rev-parse HEAD)$(shell if ! git diff --no-ext-diff --quiet --exit-code; then echo .m; fi)
@@ -59,7 +60,7 @@ GO_BENCHMARK_TESTS?=.
 
 .PHONY: all build check flatc add-ltag install uninstall tidy vendor clean \
 	clean-integration test integration release benchmarks build-benchmarks \
-	benchmarks-perf-test benchmarks-comparison-test
+	benchmarks-perf-test benchmarks-comparison-test test-with-coverage integration-with-coverage
 
 all: build
 
@@ -99,6 +100,7 @@ clean: clean-integration
 	@echo "🧹 ... 🗑️"
 	@rm -rf $(OUTDIR)
 	@rm -rf $(CURDIR)/release/
+	@rm -rf $(COVDIR)
 	@echo "All clean!"
 
 clean-integration:
@@ -125,9 +127,28 @@ vendor:
 	@GO111MODULE=$(GO111MODULE_VALUE) go mod vendor
 	@cd ./cmd ; GO111MODULE=$(GO111MODULE_VALUE) go mod vendor
 
+test-with-coverage: $(COVDIR)/unit.cov
+	go tool cover -func=$(COVDIR)/unit.cov
+
+$(COVDIR):
+	@mkdir -p $@
+
+$(COVDIR)/unit.cov: $(COVDIR)
+	GO_TEST_FLAGS="$(GO_TEST_FLAGS) -coverprofile $(COVDIR)/unit.cov" $(MAKE) test
+
 test:
 	@echo "$@"
-	@GO111MODULE=$(GO111MODULE_VALUE) go test $(GO_TEST_FLAGS) $(GO_LD_FLAGS) -race ./...
+	@GO111MODULE=$(GO111MODULE_VALUE) go test $(GO_TEST_FLAGS) $(GO_LD_FLAGS) -race `go list ./... | grep -v benchmark`
+
+integration-with-coverage: $(COVDIR)/int.cov
+
+$(COVDIR)/int.cov: $(COVDIR)/integration
+	go tool covdata textfmt -i=$(COVDIR)/integration -o=$@
+
+$(COVDIR)/integration: $(COVDIR)
+	GO_TEST_FLAGS="$(GO_TEST_FLAGS)" \
+	GO_BUILD_FLAGS="$(GO_BUILD_FLAGS) -cover" \
+		$(MAKE) integration
 
 integration: build
 	@echo "$@"
